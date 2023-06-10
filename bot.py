@@ -7,9 +7,9 @@ from aiogram.utils.executor import start_polling
 from transformers import Wav2Vec2ForCTC, Wav2Vec2Processor
 import torch
 
-TOKEN = ''
+TOKEN = 'input your token here'
 
-# Загрузка предварительно обученной модели и процессора
+# Загрузка предварительно обученной модели и процессора , жрёт 100% всех ваших процессоров
 processor = Wav2Vec2Processor.from_pretrained("facebook/wav2vec2-large-960h")
 model = Wav2Vec2ForCTC.from_pretrained("facebook/wav2vec2-large-960h")
 
@@ -25,9 +25,10 @@ def convert_ogg_to_wav(ogg_file_path, wav_file_path):
 # Обработка команды /start
 @dp.message_handler(commands=['start', 'help'])
 async def send_welcome(message: types.Message):
+    # Он наврал , пока не дообучится , не может
     await message.reply("Привет! Я бот, который может распознавать русскую речь из голосовых сообщений. Попробуйте отправить мне голосовое сообщение!")
 
-# Обработка голосовых сообщений
+# Обработка голосовых сообщений ( не пробуйте сюда подавать рыгание кота , вы очень удивитесь)
 @dp.message_handler(content_types=['voice'])
 async def analyze(message: types.Message):
     file_id = message.voice.file_id
@@ -39,14 +40,14 @@ async def analyze(message: types.Message):
     # Конвертация из .ogg в .wav
     convert_ogg_to_wav('voice.ogg', 'voice.wav')
 
-    # Распознавание речи
+    # Распознавание речи , нет блин обуздание криков
     audio_input, _ = sf.read('voice.wav')
     input_values = processor(audio_input, return_tensors='pt', sampling_rate=16_000).input_values
     logits = model(input_values).logits
     predicted_ids = torch.argmax(logits, dim=-1)
     transcription = processor.decode(predicted_ids[0])
 
-    # Отправка расшифрованного текста обратно пользователю
+    # Отправка расшифрованного текста обратно пользователю ( а он ему нужен?)
     await message.reply(transcription)
 
 # Запуск бота
